@@ -1,8 +1,8 @@
-# Ralph-CC Agent Patterns
+# Ralph Agent Patterns
 
 ## Overview
 
-Ralph-CC spawns fresh Claude Code instances per story. State persists via files:
+Ralph spawns fresh agent instances per story. State persists via files:
 - `.ralph/prd.json` - Story status
 - `.ralph/progress.txt` - Patterns and learnings
 - `.ralph/testid-contracts.json` - Required testIDs
@@ -11,18 +11,17 @@ Ralph-CC spawns fresh Claude Code instances per story. State persists via files:
 ## Key Concepts
 
 ### testID Contracts
-Every UI element's testID is defined BEFORE development. Implementation agents MUST include all contracted testIDs.
+Every UI element's testID is defined BEFORE development.
 
 ### Story Types
-1. **implementation** - Build features with testIDs
-2. **verification** - Run Maestro tests at phase end
-3. **fix** - Address specific test failures
+1. **implementation** - Build features
+2. **verification** - Run tests
+3. **fix** - Address failures
 
 ### Quality Gates
-Every story must pass:
 ```bash
-npx tsc --noEmit   # TypeScript
-npx expo lint      # Linting
+npx tsc --noEmit
+npx expo lint
 ```
 
 ## Patterns
@@ -31,33 +30,16 @@ npx expo lint      # Linting
 ```
 [screen]-[element]-[purpose]
 ```
-Examples: `login-email-input`, `profile-save-btn`, `home-welcome-text`
 
 ### Story Dependencies
 ```
-1. Types → 2. Stores → 3. Hooks → 4. Screens → 5. Logic → 6. VERIFY
+Types → Stores → Hooks → Screens → Logic → VERIFY
 ```
-
-### Commit Flow
-- Agents stage files (`git add`)
-- Final commit is manual after review
 
 ## Common Issues
 
 | Issue | Solution |
 |-------|----------|
-| Missing testID | Check contract, add to component |
-| Type errors | Check types/index.ts exports |
-| Context exceeded | Story too big, split it |
+| Missing testID | Check contract |
+| Context exceeded | Split story |
 | Repeated errors | Add to Codebase Patterns |
-
-## When to Update This File
-
-Add patterns that:
-- Affect all agents
-- Prevent recurring issues
-- Speed up iterations
-
-Do NOT add:
-- Story-specific details
-- Temporary workarounds

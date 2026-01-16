@@ -1,6 +1,6 @@
 # BRS Template
 
-Use this template to structure client requirements before converting to Ralph-CC format.
+Structure client requirements before converting to Ralph format.
 
 ---
 
@@ -8,8 +8,7 @@ Use this template to structure client requirements before converting to Ralph-CC
 
 **App Name:** [Name]
 
-**Description:** 
-[What the app does and who it's for]
+**Description:** [What it does]
 
 **Platform:** iOS, Android (React Native/Expo)
 
@@ -17,11 +16,10 @@ Use this template to structure client requirements before converting to Ralph-CC
 
 ## 2. User Types
 
-| User Type | Description |
-|-----------|-------------|
-| Guest | Unauthenticated user |
-| User | Standard authenticated user |
-| Admin | Backend management |
+| Type | Description |
+|------|-------------|
+| Guest | Unauthenticated |
+| User | Standard user |
 
 ---
 
@@ -29,20 +27,17 @@ Use this template to structure client requirements before converting to Ralph-CC
 
 ### 3.1 [Feature Category]
 
-#### User Story: [Feature Name]
+#### User Story: [Name]
 
-As a [user type], I want to [action] so that [benefit].
+As a [user], I want [action] so that [benefit].
 
 **Screen Elements:**
 - [Element 1]
 - [Element 2]
-- [Element 3]
 
 **Flow:**
-1. User navigates to **[Screen]**
-2. User [action]
-3. System [response]
-4. Success → **[Next Screen]**
+1. User → **[Screen]**
+2. Action → Result
 
 ---
 
@@ -50,23 +45,13 @@ As a [user type], I want to [action] so that [benefit].
 
 | Screen | Purpose |
 |--------|---------|
-| Welcome | Entry point |
-| Login | Authentication |
-| Home | Main dashboard |
+| Welcome | Entry |
+| Login | Auth |
+| Home | Dashboard |
 
 ---
 
-## 5. Quick Conversion
-
-If you only have rough notes:
-
-```
-I have these client requirements. Create a BRS:
-
-[paste notes here]
-```
-
-Then convert:
+## Quick Conversion
 
 ```
 Load brs-to-ralph skill, convert docs/my-brs.md

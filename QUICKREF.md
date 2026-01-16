@@ -1,66 +1,55 @@
-# Ralph-CC Quick Reference
+# Ralph Quick Reference
 
 ## Commands
 
 ```bash
 # New project
-~/tools/ralph-cc/init-new-project.sh my-app
+~/tools/ralph/init-project.sh my-app
 
 # Existing project
-~/tools/ralph-cc/setup.sh .
+~/tools/ralph/setup.sh .
+
+# Configure agent
+edit .ralph/config.json  # set "agent": "claude" or "cursor"
 
 # Install skill
-mkdir -p ~/.claude/skills
-cp -r ~/tools/ralph-cc/skills/brs-to-ralph ~/.claude/skills/
+mkdir -p ~/.claude/skills  # or ~/.cursor/skills
+cp -r ~/tools/ralph/skills/brs-to-ralph ~/.claude/skills/
 
-# Convert BRS (in Claude Code)
-claude
+# Convert BRS
+claude  # or cursor
 > Load brs-to-ralph skill, convert docs/my-brs.md
 
 # Run
-./ralph-cc.sh        # 50 iterations default
-./ralph-cc.sh 100    # Custom max
+./ralph.sh
+./ralph.sh --agent cursor
+./ralph.sh --max 100
 
-# Check progress
+# Progress
 cat .ralph/prd.json | jq '[.userStories[] | select(.passes == true)] | length'
 ```
+
+## Agents
+
+| Agent | Config Value | CLI |
+|-------|--------------|-----|
+| Claude Code | `claude` | `claude -p` |
+| Cursor | `cursor` | `agent -p` |
+| Codex | `codex` | `codex --approval-mode full-auto` |
+| Aider | `aider` | `aider --yes-always` |
 
 ## Story Types
 
 | Type | Prefix | Purpose |
 |------|--------|---------|
-| implementation | - | Build with testIDs |
-| verification | VERIFY: | Run Maestro tests |
-| fix | FIX: | Fix test failures |
+| implementation | - | Build |
+| verification | VERIFY: | Test |
+| fix | FIX: | Repair |
 
 ## testID Naming
 
 ```
 [screen]-[element]-[purpose]
-```
-
-Examples:
-- `login-email-input`
-- `profile-save-btn`
-- `home-welcome-text`
-
-## Phase Flow
-
-```
-Foundation → Screens → Features → VERIFY → Next Phase
-```
-
-## Required Acceptance Criteria
-
-Every story:
-```
-"TypeScript compiles with no errors",
-"Lint passes"
-```
-
-UI stories add:
-```
-"[Element] with testID='screen-element-purpose'"
 ```
 
 ## Files
@@ -69,13 +58,17 @@ UI stories add:
 |------|---------|
 | `.ralph/prd.json` | Stories |
 | `.ralph/progress.txt` | Learnings |
-| `.ralph/testid-contracts.json` | Required testIDs |
-| `.ralph/test-flows/*.yaml` | Maestro tests |
+| `.ralph/testid-contracts.json` | TestIDs |
+| `.ralph/config.json` | Settings |
 
-## Troubleshooting
+## Cursor Extras
 
-| Problem | Solution |
-|---------|----------|
-| Missing testID | Check contract |
-| Context exceeded | Split story |
-| Same error | Add to Codebase Patterns |
+```bash
+# Install subagents
+cp -r ~/tools/ralph/cursor/agents ~/.cursor/
+
+# Install hooks
+cp ~/tools/ralph/cursor/hooks/* .cursor/hooks/
+```
+
+Invoke: `/ralph-implementer US-005` or `/ralph-verifier US-005`

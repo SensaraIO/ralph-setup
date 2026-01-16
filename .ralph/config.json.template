@@ -1,0 +1,10 @@
+{
+  "agent": "claude",
+  "model": null,
+  "maxIterations": 50,
+  "autoCommit": false,
+  "qualityChecks": {
+    "typescript": "npx tsc --noEmit",
+    "lint": "npx expo lint"
+  }
+}

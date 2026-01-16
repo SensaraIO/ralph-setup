@@ -1,10 +1,22 @@
-# Ralph-CC
+# Ralph
 
-Autonomous AI agent loop for React Native/Expo mobile app development using Claude Code.
+Autonomous AI agent loop for mobile app development. Works with any CLI-based AI coding agent.
 
-Ralph-CC takes a BRS (Business Requirements Specification) document and autonomously implements it story-by-story with integrated testing, fresh context per story, and live output streaming.
+Ralph takes a BRS (Business Requirements Specification) document and autonomously implements it story-by-story with integrated testing, fresh context per story, and live output.
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
+
+---
+
+## Supported Agents
+
+| Agent | Command | Status |
+|-------|---------|--------|
+| Claude Code | `claude` | ✅ Tested |
+| Cursor CLI | `cursor` or `agent` | ✅ Supported |
+| Codex CLI | `codex` | ✅ Supported |
+| Aider | `aider` | ✅ Supported |
+| Amp | `amp` | ✅ Supported |
 
 ---
 
@@ -12,45 +24,42 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         RALPH-CC FLOW                                   │
+│                           RALPH FLOW                                    │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │   Your BRS Document                                                     │
 │        │                                                                │
 │        ▼                                                                │
 │   ┌─────────────────┐     ┌─────────────────────────────────────────┐  │
-│   │ brs-to-ralph    │────▶│ prd.json (stories)                      │  │
-│   │ skill           │     │ testid-contracts.json (required IDs)    │  │
-│   │                 │     │ test-flows/*.yaml (Maestro tests)       │  │
+│   │ brs-to-ralph    │────▶│ prd.json + testid-contracts.json        │  │
+│   │ skill           │     │ + test-flows/*.yaml                     │  │
 │   └─────────────────┘     └──────────────────┬──────────────────────┘  │
 │                                              │                          │
 │                                              ▼                          │
 │   ┌──────────────────────────────────────────────────────────────────┐ │
-│   │                      ralph-cc.sh                                  │ │
+│   │                        ralph.sh                                   │ │
 │   │                                                                   │ │
 │   │   FOR each story:                                                 │ │
 │   │       │                                                           │ │
 │   │       ▼                                                           │ │
 │   │   ┌─────────────────────────────────────────────────────────┐    │ │
-│   │   │ Spawn FRESH Claude Code instance                         │    │ │
+│   │   │ Spawn FRESH agent instance (claude/cursor/codex/aider)   │    │ │
 │   │   │   • Reads progress.txt for patterns                      │    │ │
 │   │   │   • Implements one story                                 │    │ │
-│   │   │   • Runs TypeScript + lint checks                        │    │ │
+│   │   │   • Runs quality checks                                  │    │ │
 │   │   │   • Updates prd.json (passes: true)                      │    │ │
-│   │   │   • Appends learnings to progress.txt                    │    │ │
 │   │   │   • Exits (context cleared)                              │    │ │
 │   │   └─────────────────────────────────────────────────────────┘    │ │
 │   │       │                                                           │ │
 │   │       ▼                                                           │ │
-│   │   Next story... (fresh context, state preserved in files)         │ │
-│   │                                                                   │ │
+│   │   Next story... (fresh context, state in files)                   │ │
 │   └──────────────────────────────────────────────────────────────────┘ │
 │                                                                         │
 │   State preserved between instances:                                    │
-│   • .ralph/prd.json ─────────── Which stories are done                 │
+│   • .ralph/prd.json ─────────── Story completion status                │
 │   • .ralph/progress.txt ─────── Patterns & learnings                   │
 │   • .ralph/testid-contracts ─── Required testIDs                       │
-│   • Git staged files ────────── Actual code written                    │
+│   • Git staged files ────────── Actual code                            │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -60,189 +69,225 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 ## Prerequisites
 
 ```bash
-# Node.js 18+
-brew install nvm
-nvm install 20
+# Required
+brew install jq
 
-# Expo CLI
-npm install -g expo-cli
-
-# Claude Code CLI (requires Anthropic account)
-# Follow: https://docs.anthropic.com/claude-code
-
-# Maestro for E2E testing
+# For testing
 brew install maestro
 
-# jq for JSON parsing
-brew install jq
+# Install your preferred agent CLI:
+
+# Claude Code
+# https://docs.anthropic.com/claude-code
+
+# Cursor CLI
+# https://cursor.com/install
+curl https://cursor.com/install -fsS | bash
+
+# Codex CLI
+npm install -g @openai/codex
+
+# Aider
+pip install aider-chat
+
+# Amp
+# https://ampcode.com
 ```
 
 ---
 
-## Quick Start (New Project)
+## Quick Start
 
 ### 1. Clone this repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ralph-cc.git ~/tools/ralph-cc
+git clone https://github.com/YOUR_USERNAME/ralph.git ~/tools/ralph
 ```
 
-### 2. Create a new Expo project with Ralph-CC
+### 2. Create a new project
 
 ```bash
-~/tools/ralph-cc/init-new-project.sh my-app-name
-cd my-app-name
+~/tools/ralph/init-project.sh my-app
+cd my-app
 ```
 
-This creates an Expo project with:
-- All dependencies installed (Zustand, react-hook-form, zod, tanstack-query)
-- Ralph-CC configured
-- Project structure ready (/types, /stores, /hooks, /schemas)
+### 3. Configure your agent
 
-### 3. Add your BRS document
+Edit `.ralph/config.json`:
+```json
+{
+  "agent": "claude"
+}
+```
+
+Options: `claude`, `cursor`, `codex`, `aider`, `amp`
+
+### 4. Add your BRS and convert
 
 ```bash
-cp /path/to/your-client-brs.md docs/
+cp /path/to/your-brs.md docs/
+
+# Using Claude Code:
+claude
+> Load the brs-to-ralph skill, convert docs/your-brs.md
+
+# Using Cursor:
+cursor
+> Load the brs-to-ralph skill, convert docs/your-brs.md
 ```
 
-If you only have rough client notes, use the template at `docs/BRS-TEMPLATE.md` or ask Claude to create a BRS from your notes.
+### 5. Run Ralph
 
-### 4. Install the skill and convert BRS
+```bash
+./ralph.sh
+```
+
+---
+
+## Agent-Specific Setup
+
+### Claude Code
 
 ```bash
 # Install skill
 mkdir -p ~/.claude/skills
-cp -r ~/tools/ralph-cc/skills/brs-to-ralph ~/.claude/skills/
-
-# Open Claude Code
-claude
+cp -r ~/tools/ralph/skills/brs-to-ralph ~/.claude/skills/
 ```
 
-Then tell Claude:
-```
-Load the brs-to-ralph skill and convert docs/your-brs.md to prd.json
-```
-
-### 5. Run Ralph-CC
+### Cursor
 
 ```bash
-./ralph-cc.sh
+# Install skill (Cursor supports .claude/skills)
+mkdir -p ~/.cursor/skills
+cp -r ~/tools/ralph/skills/brs-to-ralph ~/.cursor/skills/
+
+# Optional: Install subagents for parallel execution
+cp -r ~/tools/ralph/cursor/agents ~/.cursor/
+
+# Optional: Install hooks for automation
+cp -r ~/tools/ralph/cursor/hooks ~/.cursor/
 ```
 
-Watch it build your app story-by-story with live output.
+### Codex
+
+```bash
+# Codex uses the prompt directly, no skill installation needed
+# Just run ralph.sh with agent set to "codex"
+```
+
+### Aider
+
+```bash
+# Aider uses the prompt directly
+# Just run ralph.sh with agent set to "aider"
+```
 
 ---
 
-## Quick Start (Existing Project)
+## Configuration
 
-### 1. Run setup in your project
+### `.ralph/config.json`
 
-```bash
-~/tools/ralph-cc/setup.sh /path/to/your/existing/project
+```json
+{
+  "agent": "claude",
+  "model": null,
+  "maxIterations": 50,
+  "autoCommit": false,
+  "qualityChecks": {
+    "typescript": "npx tsc --noEmit",
+    "lint": "npx expo lint"
+  }
+}
 ```
 
-### 2. Follow steps 3-5 above
+| Field | Description | Default |
+|-------|-------------|---------|
+| `agent` | Which CLI agent to use | `claude` |
+| `model` | Model override (agent-specific) | `null` (agent default) |
+| `maxIterations` | Max stories before stopping | `50` |
+| `autoCommit` | Commit after each story | `false` |
+| `qualityChecks` | Commands to run for verification | See above |
 
 ---
 
 ## File Structure
 
 ```
-ralph-cc/
-├── README.md                 # This file
-├── QUICKREF.md              # Quick reference card
+ralph/
+├── README.md
+├── QUICKREF.md
 │
-├── ralph-cc.sh              # Main execution loop
-├── setup.sh                 # Add Ralph-CC to existing project
-├── init-new-project.sh      # Create new project with Ralph-CC
+├── ralph.sh                    # Main loop (agent-agnostic)
+├── setup.sh                    # Add to existing project
+├── init-project.sh             # Create new project
 │
-├── .ralph/                  # Configuration templates
-│   ├── prompt.md            # Instructions for implementation agent
-│   ├── AGENTS.md            # Patterns for agents
-│   └── progress.txt.template
+├── .ralph/
+│   ├── prompt.md               # Agent instructions
+│   ├── AGENTS.md               # Patterns documentation
+│   └── config.json.template    # Config template
 │
 ├── skills/
 │   └── brs-to-ralph/
-│       └── SKILL.md         # BRS to prd.json converter
+│       └── SKILL.md            # Works with Claude & Cursor
+│
+├── cursor/                     # Cursor-specific extras
+│   ├── agents/
+│   │   ├── ralph-implementer.md
+│   │   └── ralph-verifier.md
+│   └── hooks/
+│       └── hooks.json
 │
 ├── docs/
-│   └── BRS-TEMPLATE.md      # Template for client requirements
+│   └── BRS-TEMPLATE.md
 │
 └── examples/
     ├── prd.json.example
     ├── testid-contracts.json.example
     └── test-flows/
-        └── phase-02-onboarding.yaml
 ```
 
 ---
 
-## How Stories Work
+## Using with Cursor Subagents
 
-### Story Types
+Cursor supports subagents for parallel execution. Ralph includes two subagents:
 
-| Type | Prefix | Purpose |
-|------|--------|---------|
-| `implementation` | (none) | Build features with testIDs |
-| `verification` | `VERIFY:` | Run Maestro tests at phase end |
-| `fix` | `FIX:` | Address test failures |
+### ralph-implementer
+Implements one story at a time following the prompt.md instructions.
 
-### Story Sizing
+### ralph-verifier  
+Validates completed work, checks testIDs, runs quality checks.
 
-Each story must complete in ONE Claude Code context window.
-
-**Good (one story):**
-- Create one screen layout with testIDs
-- Add form validation to one screen
-- Integrate one API endpoint
-- Add one state store
-
-**Too big (split these):**
-- "Build authentication" → Login screen, Register screen, Auth store, API hooks
-- "Create dashboard" → Layout, Each widget, Data fetching
-
-### Phase Structure
-
-Each phase ends with a VERIFY story:
-
+To use:
+```bash
+# In Cursor
+> /ralph-implementer implement US-005 from .ralph/prd.json
+> /ralph-verifier verify US-005 was completed correctly
 ```
-PHASE-01: Foundation
-  US-001: Create types
-  US-002: Create stores
-  US-003: Create API hooks
-  US-004: VERIFY: Phase 1
 
-PHASE-02: Auth Screens
-  US-005: Welcome screen + testIDs
-  US-006: Login screen + testIDs
-  US-007: Login validation
-  US-008: Login API integration
-  US-009: VERIFY: Phase 2 (Maestro tests)
-```
+Or let Cursor's agent delegate automatically based on the task.
 
 ---
 
-## testID Contracts
+## Using with Cursor Hooks
 
-Every UI element gets a testID defined before development:
+Cursor hooks can automate the Ralph loop:
 
 ```json
 {
-  "storyId": "US-005",
-  "screen": "LoginScreen",
-  "testIds": [
-    { "id": "login-email-input", "element": "TextInput" },
-    { "id": "login-submit-btn", "element": "Button" }
-  ]
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": ".cursor/hooks/ralph-continue.sh"
+      }
+    ]
+  }
 }
 ```
 
-**Naming convention:** `[screen]-[element]-[purpose]`
-
-Examples:
-- `login-email-input`
-- `profile-save-btn`
-- `home-welcome-text`
+The hook checks for remaining stories and triggers continuation.
 
 ---
 
@@ -250,93 +295,41 @@ Examples:
 
 ```bash
 # Create new project
-~/tools/ralph-cc/init-new-project.sh my-app
+~/tools/ralph/init-project.sh my-app
 
-# Add to existing project
-~/tools/ralph-cc/setup.sh .
+# Add to existing project  
+~/tools/ralph/setup.sh .
 
-# Convert BRS (in Claude Code)
-claude
-> Load brs-to-ralph skill, convert docs/my-brs.md
-
-# Run Ralph-CC
-./ralph-cc.sh           # Default 50 iterations
-./ralph-cc.sh 100       # Custom max
+# Run Ralph loop
+./ralph.sh              # Uses config.json settings
+./ralph.sh --agent cursor    # Override agent
+./ralph.sh --max 100         # Override max iterations
 
 # Check progress
 cat .ralph/prd.json | jq '[.userStories[] | select(.passes == true)] | length'
 
-# See remaining stories
+# See remaining
 cat .ralph/prd.json | jq '.userStories[] | select(.passes == false) | {id, title}'
-
-# Run Maestro tests manually
-maestro test .ralph/test-flows/phase-02.yaml
 ```
-
----
-
-## State Files
-
-| File | Purpose | Persists Between |
-|------|---------|------------------|
-| `.ralph/prd.json` | Story status | ✓ All iterations |
-| `.ralph/progress.txt` | Patterns & learnings | ✓ All iterations |
-| `.ralph/testid-contracts.json` | Required testIDs | ✓ Read-only |
-| `.ralph/test-flows/*.yaml` | Maestro tests | ✓ All iterations |
-| Git staged files | Actual code | ✓ All iterations |
 
 ---
 
 ## Troubleshooting
 
-### "Claude Code command not found"
+### "Agent command not found"
+Ensure the CLI is installed and in your PATH:
 ```bash
-which claude
-# If not found, install from Anthropic docs
+which claude    # or cursor, codex, aider
 ```
 
-### "Story seems stuck"
-Check if Claude is still running. The script spawns fresh instances, so each story should complete independently.
+### "Context exceeded"
+Story is too big. Split it in `.ralph/prd.json`.
 
-### "Context exceeded" during a story
-Story is too big. Edit `.ralph/prd.json` and split it:
-```json
-// Before
-{ "id": "US-005", "title": "Build entire profile" }
+### "Same error repeating"
+Add pattern to `.ralph/progress.txt` under Codebase Patterns.
 
-// After  
-{ "id": "US-005", "title": "Create profile layout" }
-{ "id": "US-005a", "title": "Add profile validation" }
-{ "id": "US-005b", "title": "Integrate profile API" }
-```
-
-### "Same error keeps happening"
-Add the pattern to `.ralph/progress.txt` under Codebase Patterns:
-```markdown
-## Codebase Patterns
-- This project uses expo-router in /app directory
-- Forms must use react-hook-form (not useState)
-```
-
-### "Maestro tests failing"
-Run manually to debug:
-```bash
-npx expo start  # Terminal 1
-maestro test .ralph/test-flows/phase-02.yaml  # Terminal 2
-```
-
----
-
-## Timeline Expectations
-
-| Phase | Stories | Time |
-|-------|---------|------|
-| Foundation (types, stores, hooks) | 5-7 | 20-40 min |
-| Auth screens | 8-12 | 40-80 min |
-| Main features | 15-25 | 90-150 min |
-| Polish & settings | 5-10 | 30-60 min |
-
-A typical MVP with onboarding + core features: **3-6 hours autonomous work**
+### "Cursor hooks not working"
+Ensure hooks.json is at `.cursor/hooks.json` and Cursor is restarted.
 
 ---
 
@@ -344,7 +337,7 @@ A typical MVP with onboarding + core features: **3-6 hours autonomous work**
 
 1. Fork this repo
 2. Make changes
-3. Test with a real project
+3. Test with multiple agents
 4. Submit PR
 
 ---
@@ -352,10 +345,3 @@ A typical MVP with onboarding + core features: **3-6 hours autonomous work**
 ## License
 
 MIT
-
----
-
-## Credits
-
-- [Geoffrey Huntley](https://ghuntley.com/ralph/) for the original Ralph pattern
-- [Anthropic](https://anthropic.com) for Claude Code
