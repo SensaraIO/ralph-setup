@@ -1,0 +1,147 @@
+{
+  "project": "MyApp",
+  "branchName": "ralph/user-auth",
+  "description": "User Authentication - Login and registration flow",
+  "phases": [
+    {
+      "id": "PHASE-01",
+      "name": "Foundation",
+      "description": "Types, stores, API hooks"
+    },
+    {
+      "id": "PHASE-02",
+      "name": "Auth Screens",
+      "description": "Login, Register, Welcome screens"
+    }
+  ],
+  "userStories": [
+    {
+      "id": "US-001",
+      "phaseId": "PHASE-01",
+      "storyType": "implementation",
+      "title": "Create auth types",
+      "description": "As a developer, I need type definitions for auth",
+      "acceptanceCriteria": [
+        "User type with id, email, name in /types/user.ts",
+        "AuthState type in /types/auth.ts",
+        "LoginInput, RegisterInput types",
+        "Types exported from /types/index.ts",
+        "TypeScript compiles with no errors",
+        "Lint passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "phaseId": "PHASE-01",
+      "storyType": "implementation",
+      "title": "Create auth store",
+      "description": "As a developer, I need auth state management",
+      "acceptanceCriteria": [
+        "authStore in /stores/authStore.ts using Zustand",
+        "Actions: login, logout, setUser, setLoading",
+        "Token persistence with expo-secure-store",
+        "TypeScript compiles with no errors",
+        "Lint passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "phaseId": "PHASE-01",
+      "storyType": "implementation",
+      "title": "Create auth API hooks",
+      "description": "As a developer, I need API hooks for auth",
+      "acceptanceCriteria": [
+        "useLogin mutation hook in /hooks/useLogin.ts",
+        "useRegister mutation hook in /hooks/useRegister.ts",
+        "Hooks use @tanstack/react-query",
+        "TypeScript compiles with no errors",
+        "Lint passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "phaseId": "PHASE-01",
+      "storyType": "verification",
+      "title": "VERIFY: Phase 1 foundation",
+      "description": "Verify foundation code compiles",
+      "acceptanceCriteria": [
+        "All types importable from /types",
+        "authStore initializes without error",
+        "API hooks importable",
+        "TypeScript compiles with no errors",
+        "Lint passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "phaseId": "PHASE-02",
+      "storyType": "implementation",
+      "title": "Create Welcome screen",
+      "description": "As a new user, I see a welcome screen",
+      "testIdContract": "welcome-screen",
+      "acceptanceCriteria": [
+        "WelcomeScreen at /app/(auth)/welcome.tsx",
+        "Logo with testID='welcome-logo'",
+        "Get Started button with testID='welcome-get-started-btn'",
+        "Login link with testID='welcome-login-link'",
+        "TypeScript compiles with no errors",
+        "Lint passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "phaseId": "PHASE-02",
+      "storyType": "implementation",
+      "title": "Create Login screen",
+      "description": "As a returning user, I can log in",
+      "testIdContract": "login-screen",
+      "acceptanceCriteria": [
+        "LoginScreen at /app/(auth)/login.tsx",
+        "Email input with testID='login-email-input'",
+        "Password input with testID='login-password-input'",
+        "Login button with testID='login-submit-btn'",
+        "Error text with testID='login-error-text'",
+        "Form validation with react-hook-form/zod",
+        "useLogin integration",
+        "TypeScript compiles with no errors",
+        "Lint passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "phaseId": "PHASE-02",
+      "storyType": "verification",
+      "title": "VERIFY: Phase 2 auth screens",
+      "description": "Verify auth screens work via Maestro",
+      "acceptanceCriteria": [
+        "All Phase 2 testIDs present in codebase",
+        "Maestro flow at .ralph/test-flows/phase-02-auth.yaml",
+        "Test: Welcome → Login link → Login screen",
+        "Test: Login with valid data → success",
+        "Test: Login with invalid data → error visible",
+        "TypeScript compiles with no errors"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

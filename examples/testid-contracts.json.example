@@ -1,0 +1,56 @@
+{
+  "project": "MyApp",
+  "contracts": [
+    {
+      "storyId": "US-005",
+      "contractId": "welcome-screen",
+      "screen": "WelcomeScreen",
+      "path": "/app/(auth)/welcome.tsx",
+      "testIds": [
+        {
+          "id": "welcome-logo",
+          "element": "Image",
+          "purpose": "App logo"
+        },
+        {
+          "id": "welcome-get-started-btn",
+          "element": "Button",
+          "purpose": "Navigate to registration"
+        },
+        {
+          "id": "welcome-login-link",
+          "element": "Pressable",
+          "purpose": "Navigate to login"
+        }
+      ]
+    },
+    {
+      "storyId": "US-006",
+      "contractId": "login-screen",
+      "screen": "LoginScreen",
+      "path": "/app/(auth)/login.tsx",
+      "testIds": [
+        {
+          "id": "login-email-input",
+          "element": "TextInput",
+          "purpose": "Email entry"
+        },
+        {
+          "id": "login-password-input",
+          "element": "TextInput",
+          "purpose": "Password entry"
+        },
+        {
+          "id": "login-submit-btn",
+          "element": "Button",
+          "purpose": "Submit login"
+        },
+        {
+          "id": "login-error-text",
+          "element": "Text",
+          "purpose": "Error display"
+        }
+      ]
+    }
+  ]
+}
