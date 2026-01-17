@@ -5,6 +5,7 @@
   "autoCommit": false,
   "qualityChecks": {
     "typescript": "npx tsc --noEmit",
-    "lint": "npx expo lint"
+    "lint": "npx expo lint",
+    "convex": "npx convex typecheck"
   }
 }

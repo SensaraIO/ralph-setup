@@ -2,7 +2,7 @@
 
 ## Hook Setup (Optional)
 
-Claude Code uses a different hooks system. To enable auto-continuation:
+To enable auto-continuation between stories:
 
 1. Open Claude Code in your project
 2. Run `/hooks`
@@ -22,9 +22,31 @@ remaining=$(jq '[.userStories[] | select(.passes == false)] | length' .ralph/prd
 
 ## Without Hooks
 
-Just tell Claude:
+Tell Claude:
 ```
-Read .ralph/prompt.md and implement all stories in .ralph/prd.json sequentially. After each story, update prd.json and continue without stopping.
+Read .ralph/prompt.md and implement all stories in .ralph/prd.json sequentially. 
+After each story, update prd.json and continue without stopping.
 ```
 
-Or use the `ralph.sh` script which spawns fresh instances automatically.
+Or use `ralph.sh` which spawns fresh instances.
+
+## For VERIFY Stories
+
+Start the Expo dev server with MCP first:
+```bash
+EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
+```
+
+Then Claude can use Expo MCP tools:
+- `automation_take_screenshot`
+- `automation_tap_by_testid`
+- `automation_find_view_by_testid`
+
+## Convex Development
+
+Keep Convex dev running in a separate terminal:
+```bash
+npx convex dev
+```
+
+This auto-deploys schema changes as Claude makes them.

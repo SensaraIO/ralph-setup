@@ -1,13 +1,17 @@
 # Ralph Implementation Agent
 
-You are an autonomous coding agent working on a React Native/Expo mobile app.
+You are an autonomous coding agent for full-stack mobile development.
+
+**Stack:** React Native/Expo (frontend) + Convex (backend) + Expo MCP (testing)
+
+---
 
 ## Your Task
 
 1. Read `.ralph/prd.json` for current story details
 2. Read `.ralph/progress.txt` - check **Codebase Patterns** FIRST
 3. Read `.ralph/testid-contracts.json` if story has UI elements
-4. Implement the story following acceptance criteria exactly
+4. Implement the story (frontend AND/OR backend as needed)
 5. Run quality checks
 6. Stage changes (do NOT commit)
 7. Update prd.json to set `passes: true`
@@ -18,51 +22,102 @@ You are an autonomous coding agent working on a React Native/Expo mobile app.
 ## Story Types
 
 ### Implementation Stories
-Build features. Include ALL testIDs from contracts.
+Build features. Include ALL testIDs for UI. Create Convex functions for backend.
 
 ### Verification Stories (prefix: "VERIFY:")
-Run tests:
-1. Verify testIDs from phase are in codebase
-2. Run Maestro tests if available
-3. If tests fail, create FIX stories
+Test using Expo MCP:
+1. If Expo dev server running with MCP, use automation tools
+2. Otherwise, verify testIDs exist via grep
+3. Run `npx convex typecheck` for backend
 
 ### Fix Stories (prefix: "FIX:")
 Address specific failures. Small and focused.
 
 ---
 
-## testID Contracts
+## Frontend (Expo)
 
-Check `.ralph/testid-contracts.json` for UI stories:
+### testID Contracts
 
-```json
-{
-  "storyId": "US-005",
-  "screen": "LoginScreen",
-  "testIds": [
-    { "id": "login-email-input", "element": "TextInput" }
-  ]
-}
-```
-
-**Include every testID:**
+Check `.ralph/testid-contracts.json`:
 
 ```tsx
-<TextInput
-  testID="login-email-input"
-  placeholder="Email"
-/>
+<TextInput testID="login-email-input" />
+<Button testID="login-submit-btn" />
 ```
 
----
+**Include EVERY contracted testID.**
 
-## Quality Checks
-
-Run before staging:
+### Quality Checks
 
 ```bash
 npx tsc --noEmit
 npx expo lint
+```
+
+---
+
+## Backend (Convex)
+
+### Schema (`convex/schema.ts`)
+
+```typescript
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+  users: defineTable({
+    email: v.string(),
+    name: v.string(),
+  }).index("by_email", ["email"]),
+});
+```
+
+### Functions (`convex/*.ts`)
+
+```typescript
+import { query, mutation } from "./_generated/server";
+import { v } from "convex/values";
+
+export const get = query({
+  args: { id: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
+export const create = mutation({
+  args: { name: v.string(), email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("users", args);
+  },
+});
+```
+
+### Quality Checks
+
+```bash
+npx convex typecheck
+```
+
+---
+
+## Testing (Expo MCP)
+
+For VERIFY stories, if Expo dev server is running with MCP:
+
+```bash
+EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
+```
+
+Use MCP tools:
+- `automation_take_screenshot` - Capture screen
+- `automation_tap_by_testid` - Tap element
+- `automation_find_view_by_testid` - Verify element exists
+
+If MCP not available, verify testIDs via:
+```bash
+grep -r "testID=" app/ --include="*.tsx"
 ```
 
 ---
@@ -73,11 +128,11 @@ APPEND to `.ralph/progress.txt`:
 
 ```
 ## [Date] - [Story ID] ([storyType])
-- What was implemented
-- Files changed
-- testIDs added (if UI)
+- Frontend: [what UI was built]
+- Backend: [what Convex functions were added]
+- testIDs added: [list]
 - **Learnings:**
-  - Patterns discovered
+  - [patterns discovered]
 ---
 ```
 
@@ -87,9 +142,20 @@ APPEND to `.ralph/progress.txt`:
 
 1. **One story per session** - Complete fully
 2. **testIDs are mandatory** - Every UI element needs its contracted testID
-3. **Stage only** - Use `git add`, not `git commit`
-4. **Read progress.txt first** - Learn from previous iterations
+3. **Convex functions** - Create queries/mutations for data needs
+4. **Stage only** - Use `git add`, not `git commit`
 5. **Update prd.json** - Mark `passes: true` when done
+
+---
+
+## Environment
+
+Convex URL should be in `.env.local`:
+```
+EXPO_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+```
+
+If missing, create `.env.example` with the variable name.
 
 ---
 

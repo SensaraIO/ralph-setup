@@ -1,8 +1,11 @@
 # Ralph
 
-Autonomous AI agent loop for mobile app development. Works with any CLI-based AI coding agent.
+Autonomous AI agent loop for full-stack mobile app development using any CLI-based AI coding agent.
 
-Ralph takes a BRS (Business Requirements Specification) document and autonomously implements it story-by-story with integrated testing, fresh context per story, and live output.
+Ralph takes a BRS (Business Requirements Specification) document and autonomously implements it story-by-story with:
+- **React Native/Expo** frontend
+- **Convex** backend (database + functions)
+- **Expo MCP** for automated testing
 
 Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
@@ -13,10 +16,22 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 | Agent | Command | Status |
 |-------|---------|--------|
 | Claude Code | `claude` | ✅ Tested |
-| Cursor CLI | `cursor` or `agent` | ✅ Supported |
+| Cursor CLI | `cursor` / `agent` | ✅ Supported |
 | Codex CLI | `codex` | ✅ Supported |
 | Aider | `aider` | ✅ Supported |
-| Amp | `amp` | ✅ Supported |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React Native + Expo |
+| Backend | Convex (database + functions) |
+| Testing | Expo MCP (automation) |
+| State | Zustand |
+| Forms | react-hook-form + zod |
+| API | Convex client hooks |
 
 ---
 
@@ -32,7 +47,7 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 │        ▼                                                                │
 │   ┌─────────────────┐     ┌─────────────────────────────────────────┐  │
 │   │ brs-to-ralph    │────▶│ prd.json + testid-contracts.json        │  │
-│   │ skill           │     │ + test-flows/*.yaml                     │  │
+│   │ skill           │     │ + convex schema + test flows            │  │
 │   └─────────────────┘     └──────────────────┬──────────────────────┘  │
 │                                              │                          │
 │                                              ▼                          │
@@ -43,23 +58,18 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 │   │       │                                                           │ │
 │   │       ▼                                                           │ │
 │   │   ┌─────────────────────────────────────────────────────────┐    │ │
-│   │   │ Spawn FRESH agent instance (claude/cursor/codex/aider)   │    │ │
-│   │   │   • Reads progress.txt for patterns                      │    │ │
-│   │   │   • Implements one story                                 │    │ │
+│   │   │ Spawn FRESH agent instance                               │    │ │
+│   │   │   • Implements frontend OR backend for story             │    │ │
 │   │   │   • Runs quality checks                                  │    │ │
 │   │   │   • Updates prd.json (passes: true)                      │    │ │
 │   │   │   • Exits (context cleared)                              │    │ │
 │   │   └─────────────────────────────────────────────────────────┘    │ │
 │   │       │                                                           │ │
 │   │       ▼                                                           │ │
-│   │   Next story... (fresh context, state in files)                   │ │
+│   │   Next story...                                                   │ │
 │   └──────────────────────────────────────────────────────────────────┘ │
 │                                                                         │
-│   State preserved between instances:                                    │
-│   • .ralph/prd.json ─────────── Story completion status                │
-│   • .ralph/progress.txt ─────── Patterns & learnings                   │
-│   • .ralph/testid-contracts ─── Required testIDs                       │
-│   • Git staged files ────────── Actual code                            │
+│   VERIFY stories use Expo MCP for automated UI testing                 │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -72,26 +82,13 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 # Required
 brew install jq
 
-# For testing
-brew install maestro
+# Convex CLI
+npm install -g convex
 
 # Install your preferred agent CLI:
-
-# Claude Code
-# https://docs.anthropic.com/claude-code
-
-# Cursor CLI
-# https://cursor.com/install
-curl https://cursor.com/install -fsS | bash
-
-# Codex CLI
-npm install -g @openai/codex
-
-# Aider
-pip install aider-chat
-
-# Amp
-# https://ampcode.com
+# Claude Code: https://docs.anthropic.com/claude-code
+# Cursor: curl https://cursor.com/install -fsS | bash
+# Codex: npm install -g @openai/codex
 ```
 
 ---
@@ -111,7 +108,23 @@ git clone https://github.com/YOUR_USERNAME/ralph.git ~/tools/ralph
 cd my-app
 ```
 
-### 3. Configure your agent
+This creates:
+- Expo project with all dependencies
+- Convex backend initialized
+- Expo MCP for testing
+- `.env.example` with required variables
+
+### 3. Configure Convex
+
+```bash
+# Login to Convex
+npx convex login
+
+# Initialize (creates deployment)
+npx convex dev
+```
+
+### 4. Configure your agent
 
 Edit `.ralph/config.json`:
 ```json
@@ -120,23 +133,16 @@ Edit `.ralph/config.json`:
 }
 ```
 
-Options: `claude`, `cursor`, `codex`, `aider`, `amp`
-
-### 4. Add your BRS and convert
+### 5. Add your BRS and convert
 
 ```bash
 cp /path/to/your-brs.md docs/
 
-# Using Claude Code:
-claude
-> Load the brs-to-ralph skill, convert docs/your-brs.md
-
-# Using Cursor:
-cursor
+# In your agent:
 > Load the brs-to-ralph skill, convert docs/your-brs.md
 ```
 
-### 5. Run Ralph
+### 6. Run Ralph
 
 ```bash
 ./ralph.sh
@@ -144,201 +150,170 @@ cursor
 
 ---
 
-## Agent-Specific Setup
+## Testing with Expo MCP
 
-### Claude Code
+Ralph uses Expo MCP for automated testing instead of Maestro.
 
-```bash
-# Install skill
-mkdir -p ~/.claude/skills
-cp -r ~/tools/ralph/skills/brs-to-ralph ~/.claude/skills/
+### For VERIFY Stories
+
+1. **Start the dev server with MCP:**
+   ```bash
+   EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
+   ```
+
+2. **In another terminal, run the agent:**
+   ```bash
+   claude  # or cursor
+   ```
+
+3. **The agent uses MCP tools for testing:**
+   - `automation_take_screenshot` - Capture screen state
+   - `automation_tap_by_testid` - Tap elements by testID
+   - `automation_find_view_by_testid` - Find and analyze views
+
+### Expo MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `automation_take_screenshot` | Full device screenshot |
+| `automation_tap_by_testid` | Tap view by testID |
+| `automation_find_view_by_testid` | Find view properties |
+| `automation_take_screenshot_by_testid` | Screenshot specific view |
+| `learn` | Learn Expo how-to |
+| `add_library` | Install packages |
+
+---
+
+## Convex Backend
+
+Ralph generates Convex schema and functions alongside frontend code.
+
+### Directory Structure
+
+```
+my-app/
+├── convex/
+│   ├── schema.ts          # Database schema
+│   ├── auth.ts            # Auth functions
+│   ├── users.ts           # User queries/mutations
+│   └── _generated/        # Auto-generated types
+├── app/                   # Expo screens
+├── hooks/
+│   └── useConvex*.ts      # Convex query hooks
+└── .env.local             # CONVEX_URL
 ```
 
-### Cursor
+### Schema Example
 
-```bash
-# Install skill (Cursor supports .claude/skills)
-mkdir -p ~/.cursor/skills
-cp -r ~/tools/ralph/skills/brs-to-ralph ~/.cursor/skills/
+```typescript
+// convex/schema.ts
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
-# Optional: Install subagents for parallel execution
-cp -r ~/tools/ralph/cursor/agents ~/.cursor/
-
-# Optional: Install hooks for automation
-cp -r ~/tools/ralph/cursor/hooks ~/.cursor/
+export default defineSchema({
+  users: defineTable({
+    email: v.string(),
+    name: v.string(),
+    profileComplete: v.boolean(),
+  }).index("by_email", ["email"]),
+});
 ```
 
-### Codex
+### Function Example
 
-```bash
-# Codex uses the prompt directly, no skill installation needed
-# Just run ralph.sh with agent set to "codex"
-```
+```typescript
+// convex/users.ts
+import { query, mutation } from "./_generated/server";
+import { v } from "convex/values";
 
-### Aider
-
-```bash
-# Aider uses the prompt directly
-# Just run ralph.sh with agent set to "aider"
+export const get = query({
+  args: { id: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
 ```
 
 ---
 
-## Configuration
+## Story Types
 
-### `.ralph/config.json`
+| Type | Prefix | Purpose |
+|------|--------|---------|
+| `implementation` | - | Build frontend/backend |
+| `verification` | VERIFY: | Run Expo MCP tests |
+| `fix` | FIX: | Address failures |
 
-```json
-{
-  "agent": "claude",
-  "model": null,
-  "maxIterations": 50,
-  "autoCommit": false,
-  "qualityChecks": {
-    "typescript": "npx tsc --noEmit",
-    "lint": "npx expo lint"
-  }
-}
-```
-
-| Field | Description | Default |
-|-------|-------------|---------|
-| `agent` | Which CLI agent to use | `claude` |
-| `model` | Model override (agent-specific) | `null` (agent default) |
-| `maxIterations` | Max stories before stopping | `50` |
-| `autoCommit` | Commit after each story | `false` |
-| `qualityChecks` | Commands to run for verification | See above |
-
----
-
-## File Structure
+### Phase Structure
 
 ```
-ralph/
-├── README.md
-├── QUICKREF.md
-│
-├── ralph.sh                    # Main loop (agent-agnostic)
-├── setup.sh                    # Add to existing project
-├── init-project.sh             # Create new project
-│
-├── .ralph/
-│   ├── prompt.md               # Agent instructions
-│   ├── AGENTS.md               # Patterns documentation
-│   └── config.json.template    # Config template
-│
-├── skills/
-│   └── brs-to-ralph/
-│       └── SKILL.md            # Works with Claude & Cursor
-│
-├── cursor/                     # Cursor-specific extras
-│   ├── agents/
-│   │   ├── ralph-implementer.md
-│   │   └── ralph-verifier.md
-│   └── hooks/
-│       └── hooks.json
-│
-├── docs/
-│   └── BRS-TEMPLATE.md
-│
-└── examples/
-    ├── prd.json.example
-    ├── testid-contracts.json.example
-    └── test-flows/
+PHASE-01: Foundation
+  US-001: Convex schema
+  US-002: Auth functions  
+  US-003: Frontend types/stores
+  US-004: VERIFY: Schema deploys
+
+PHASE-02: Auth Screens
+  US-005: Login mutations
+  US-006: Login screen + testIDs
+  US-007: Register mutations
+  US-008: Register screen + testIDs
+  US-009: VERIFY: Auth flow (Expo MCP)
 ```
 
 ---
 
-## Using with Cursor Subagents
+## Environment Variables
 
-Cursor supports subagents for parallel execution. Ralph includes two subagents:
-
-### ralph-implementer
-Implements one story at a time following the prompt.md instructions.
-
-### ralph-verifier  
-Validates completed work, checks testIDs, runs quality checks.
-
-To use:
 ```bash
-# In Cursor
-> /ralph-implementer implement US-005 from .ralph/prd.json
-> /ralph-verifier verify US-005 was completed correctly
+# .env.example
+EXPO_PUBLIC_CONVEX_URL=
 ```
 
-Or let Cursor's agent delegate automatically based on the task.
-
----
-
-## Using with Cursor Hooks
-
-Cursor hooks can automate the Ralph loop:
-
-```json
-{
-  "version": 1,
-  "hooks": {
-    "stop": [
-      {
-        "command": ".cursor/hooks/ralph-continue.sh"
-      }
-    ]
-  }
-}
-```
-
-The hook checks for remaining stories and triggers continuation.
+Run `npx convex dev` to get your deployment URL, then add to `.env.local`.
 
 ---
 
 ## Commands Reference
 
 ```bash
-# Create new project
+# New project
 ~/tools/ralph/init-project.sh my-app
 
-# Add to existing project  
+# Add to existing
 ~/tools/ralph/setup.sh .
 
-# Run Ralph loop
-./ralph.sh              # Uses config.json settings
-./ralph.sh --agent cursor    # Override agent
-./ralph.sh --max 100         # Override max iterations
+# Run Ralph
+./ralph.sh
+./ralph.sh --agent cursor
+./ralph.sh --max 100
+
+# Convex dev (runs in background)
+npx convex dev
+
+# Start dev server for testing
+EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
 
 # Check progress
 cat .ralph/prd.json | jq '[.userStories[] | select(.passes == true)] | length'
-
-# See remaining
-cat .ralph/prd.json | jq '.userStories[] | select(.passes == false) | {id, title}'
 ```
 
 ---
 
 ## Troubleshooting
 
-### "Agent command not found"
-Ensure the CLI is installed and in your PATH:
-```bash
-which claude    # or cursor, codex, aider
-```
+### "Convex schema errors"
+Run `npx convex dev` to see detailed errors.
+
+### "Expo MCP not connecting"
+Ensure dev server is running with `EXPO_UNSTABLE_MCP_SERVER=1` flag.
+Restart your agent after starting/stopping the dev server.
+
+### "testID not found"
+Check the element has `testID` prop and app is on correct screen.
 
 ### "Context exceeded"
-Story is too big. Split it in `.ralph/prd.json`.
-
-### "Same error repeating"
-Add pattern to `.ralph/progress.txt` under Codebase Patterns.
-
-### "Cursor hooks not working"
-Ensure hooks.json is at `.cursor/hooks.json` and Cursor is restarted.
-
----
-
-## Contributing
-
-1. Fork this repo
-2. Make changes
-3. Test with multiple agents
-4. Submit PR
+Story too big. Split in `.ralph/prd.json`.
 
 ---
 

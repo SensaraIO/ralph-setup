@@ -1,45 +1,101 @@
 # Ralph Agent Patterns
 
-## Overview
+## Tech Stack
 
-Ralph spawns fresh agent instances per story. State persists via files:
+- **Frontend:** React Native + Expo
+- **Backend:** Convex (database + serverless functions)
+- **Testing:** Expo MCP (automation)
+- **State:** Zustand
+- **Forms:** react-hook-form + zod
+
+---
+
+## State Persistence
+
+Ralph spawns fresh agent instances per story. State persists via:
 - `.ralph/prd.json` - Story status
 - `.ralph/progress.txt` - Patterns and learnings
 - `.ralph/testid-contracts.json` - Required testIDs
 - Git staged files - Actual code
+- Convex - Database (persistent backend)
 
-## Key Concepts
+---
 
-### testID Contracts
-Every UI element's testID is defined BEFORE development.
+## Convex Patterns
 
-### Story Types
-1. **implementation** - Build features
-2. **verification** - Run tests
-3. **fix** - Address failures
-
-### Quality Gates
+### Schema Changes
 ```bash
-npx tsc --noEmit
-npx expo lint
+# After changing convex/schema.ts
+npx convex dev  # Pushes schema
 ```
 
-## Patterns
+### Query Pattern
+```typescript
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("items").collect();
+  },
+});
+```
+
+### Mutation Pattern
+```typescript
+export const create = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("items", { name: args.name });
+  },
+});
+```
+
+### Using in React
+```typescript
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+
+const items = useQuery(api.items.list);
+const createItem = useMutation(api.items.create);
+```
+
+---
+
+## Expo MCP Testing
+
+### Start Dev Server with MCP
+```bash
+EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
+```
+
+### Available Tools
+- `automation_take_screenshot` - Full screen capture
+- `automation_tap_by_testid` - Tap element
+- `automation_find_view_by_testid` - Find element
+- `automation_take_screenshot_by_testid` - Screenshot specific view
 
 ### testID Naming
 ```
 [screen]-[element]-[purpose]
 ```
 
-### Story Dependencies
+Examples: `login-email-input`, `profile-save-btn`
+
+---
+
+## Story Dependencies
+
 ```
-Types → Stores → Hooks → Screens → Logic → VERIFY
+Schema → Functions → Types → Stores → Hooks → Screens → VERIFY
 ```
+
+---
 
 ## Common Issues
 
 | Issue | Solution |
 |-------|----------|
 | Missing testID | Check contract |
+| Convex type error | Run `npx convex typecheck` |
+| Schema not updating | Run `npx convex dev` |
+| MCP not working | Restart dev server with flag |
 | Context exceeded | Split story |
-| Repeated errors | Add to Codebase Patterns |

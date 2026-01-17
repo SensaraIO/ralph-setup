@@ -1,6 +1,6 @@
 #!/bin/bash
 # Ralph - Autonomous AI agent loop
-# Works with: Claude Code, Cursor, Codex, Aider, Amp
+# Full-stack: Expo + Convex + Expo MCP Testing
 # Usage: ./ralph.sh [--agent <name>] [--max <iterations>]
 
 set -e
@@ -11,7 +11,6 @@ PRD_FILE="$RALPH_DIR/prd.json"
 PROGRESS_FILE="$RALPH_DIR/progress.txt"
 CONFIG_FILE="$RALPH_DIR/config.json"
 
-# Defaults
 DEFAULT_AGENT="claude"
 DEFAULT_MAX=50
 
@@ -54,14 +53,11 @@ load_config() {
   if [ -f "$CONFIG_FILE" ]; then
     AGENT=$(jq -r '.agent // "claude"' "$CONFIG_FILE")
     MAX_ITERATIONS=$(jq -r '.maxIterations // 50' "$CONFIG_FILE")
-    MODEL=$(jq -r '.model // null' "$CONFIG_FILE")
   else
     AGENT="$DEFAULT_AGENT"
     MAX_ITERATIONS=$DEFAULT_MAX
-    MODEL=""
   fi
   
-  # Apply overrides
   [ -n "$AGENT_OVERRIDE" ] && AGENT="$AGENT_OVERRIDE"
   [ -n "$MAX_OVERRIDE" ] && MAX_ITERATIONS="$MAX_OVERRIDE"
 }
@@ -105,20 +101,18 @@ check_prerequisites() {
         exit 1
       fi
       ;;
-    amp)
-      if ! command -v amp &> /dev/null; then
-        log_error "Amp not found"
-        exit 1
-      fi
-      ;;
     *)
       log_error "Unknown agent: $AGENT"
-      log_info "Supported: claude, cursor, codex, aider, amp"
       exit 1
       ;;
   esac
   
   log_success "Agent: $AGENT"
+  
+  # Check Convex
+  if [ -d "convex" ]; then
+    log_success "Convex detected"
+  fi
 }
 
 # Get story info
@@ -143,28 +137,49 @@ get_current_phase() {
   jq -r --arg id "$story_id" '.userStories[] | select(.id == $id) | .phaseId' "$PRD_FILE"
 }
 
+get_story_type() {
+  local story_id=$(get_next_story_id)
+  jq -r --arg id "$story_id" '.userStories[] | select(.id == $id) | .storyType // "implementation"' "$PRD_FILE"
+}
+
 # Build prompt
 build_prompt() {
   local story_id=$1
+  local story_type=$(get_story_type)
+  
   cat << EOF
 You are an autonomous coding agent. Read .ralph/prompt.md for full instructions.
 
 YOUR TASK: Implement story $story_id from .ralph/prd.json
+Story Type: $story_type
 
 Steps:
 1. Read .ralph/prd.json to get story details for $story_id
-2. Read .ralph/progress.txt - check Codebase Patterns section FIRST
-3. Read .ralph/testid-contracts.json if story has UI elements - include ALL required testIDs
-4. Implement the story following acceptance criteria exactly
-5. Run quality checks: npx tsc --noEmit && npx expo lint
-6. If checks pass, stage files: git add [files]
+2. Read .ralph/progress.txt - check Codebase Patterns FIRST
+3. For UI stories: Read .ralph/testid-contracts.json - include ALL required testIDs
+4. Implement the story:
+   - Frontend: React Native/Expo components
+   - Backend: Convex functions in /convex/*.ts
+5. Run quality checks:
+   - npx tsc --noEmit
+   - npx expo lint
+   - npx convex typecheck (if Convex changes)
+6. Stage files: git add [files]
 7. Update .ralph/prd.json to set passes: true for $story_id
-8. Append progress to .ralph/progress.txt with learnings
+8. Append progress to .ralph/progress.txt
 
 IMPORTANT:
-- Do NOT commit, only stage files
+- Do NOT commit, only stage
 - Do NOT ask questions - make reasonable decisions
-- Include ALL testIDs from contracts
+- Include ALL testIDs from contracts for UI stories
+- Convex schema changes require running: npx convex dev
+
+For VERIFY stories (story type: verification):
+- Use Expo MCP tools if dev server is running with MCP enabled
+- automation_take_screenshot - capture current screen
+- automation_tap_by_testid - tap elements
+- automation_find_view_by_testid - verify elements exist
+- If MCP not available, verify testIDs exist in code via grep
 
 If ALL stories complete, end with: <promise>COMPLETE</promise>
 
@@ -185,7 +200,6 @@ run_agent() {
       fi
       ;;
     cursor)
-      # Cursor CLI uses 'agent' command or 'cursor'
       if command -v agent &> /dev/null; then
         agent -p "$prompt" 2>&1
       else
@@ -198,9 +212,6 @@ run_agent() {
     aider)
       echo "$prompt" | aider --yes-always --no-git 2>&1
       ;;
-    amp)
-      echo "$prompt" | amp --dangerously-allow-all 2>&1
-      ;;
   esac
 }
 
@@ -209,7 +220,7 @@ main() {
   echo ""
   echo "╔══════════════════════════════════════════════════════════════╗"
   echo "║                         RALPH                                ║"
-  echo "║          Autonomous AI Agent Loop                            ║"
+  echo "║        Full-Stack: Expo + Convex + Expo MCP                  ║"
   echo "╚══════════════════════════════════════════════════════════════╝"
   echo ""
   
@@ -226,6 +237,15 @@ main() {
   log_info "Branch: $branch"
   log_info "Progress: $completed/$total stories"
   log_info "Max iterations: $MAX_ITERATIONS"
+  echo ""
+  
+  # Check for Expo MCP server
+  if curl -s http://localhost:8081 > /dev/null 2>&1; then
+    log_success "Expo dev server detected (MCP testing available)"
+  else
+    log_warning "Expo dev server not running"
+    log_info "For VERIFY stories, start with: EXPO_UNSTABLE_MCP_SERVER=1 npx expo start"
+  fi
   echo ""
   
   # Switch to branch if needed
@@ -246,19 +266,21 @@ main() {
       echo ""
       log_info "Review: git status"
       log_info "Commit: git commit -m 'feat: Complete $project'"
+      log_info "Deploy Convex: npx convex deploy"
       exit 0
     fi
     
     local next_story=$(get_next_story)
     local story_id=$(get_next_story_id)
     local phase=$(get_current_phase)
+    local story_type=$(get_story_type)
     completed=$((total - remaining))
     
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo -e "  ${CYAN}Iteration $i of $MAX_ITERATIONS${NC} │ ${BLUE}Agent: $AGENT${NC}"
     echo -e "  ${GREEN}Progress: $completed/$total${NC} │ ${YELLOW}Remaining: $remaining${NC}"
-    echo -e "  ${BLUE}Phase: $phase${NC}"
+    echo -e "  ${BLUE}Phase: $phase${NC} │ Type: $story_type"
     log_story "$next_story"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""

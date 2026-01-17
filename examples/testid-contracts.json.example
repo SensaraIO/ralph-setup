@@ -2,15 +2,29 @@
   "project": "MyApp",
   "contracts": [
     {
-      "storyId": "US-004",
+      "storyId": "US-005",
       "contractId": "login-screen",
       "screen": "LoginScreen",
       "path": "/app/(auth)/login.tsx",
       "testIds": [
         { "id": "login-email-input", "element": "TextInput", "purpose": "Email entry" },
         { "id": "login-password-input", "element": "TextInput", "purpose": "Password entry" },
-        { "id": "login-submit-btn", "element": "Button", "purpose": "Submit form" },
-        { "id": "login-error-text", "element": "Text", "purpose": "Error display" }
+        { "id": "login-submit-btn", "element": "Button", "purpose": "Submit login" },
+        { "id": "login-error-text", "element": "Text", "purpose": "Error display" },
+        { "id": "login-forgot-link", "element": "Pressable", "purpose": "Forgot password" }
+      ]
+    },
+    {
+      "storyId": "US-007",
+      "contractId": "register-screen",
+      "screen": "RegisterScreen",
+      "path": "/app/(auth)/register.tsx",
+      "testIds": [
+        { "id": "register-name-input", "element": "TextInput", "purpose": "Name entry" },
+        { "id": "register-email-input", "element": "TextInput", "purpose": "Email entry" },
+        { "id": "register-password-input", "element": "TextInput", "purpose": "Password entry" },
+        { "id": "register-submit-btn", "element": "Button", "purpose": "Submit registration" },
+        { "id": "register-error-text", "element": "Text", "purpose": "Error display" }
       ]
     }
   ]

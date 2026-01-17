@@ -3,19 +3,19 @@
   "branchName": "ralph/auth",
   "phases": [
     { "id": "PHASE-01", "name": "Foundation" },
-    { "id": "PHASE-02", "name": "Auth Screens" }
+    { "id": "PHASE-02", "name": "Auth" }
   ],
   "userStories": [
     {
       "id": "US-001",
       "phaseId": "PHASE-01",
       "storyType": "implementation",
-      "title": "Create auth types",
+      "layer": "backend",
+      "title": "Create user schema",
       "acceptanceCriteria": [
-        "User type in /types/user.ts",
-        "AuthState in /types/auth.ts",
-        "TypeScript compiles",
-        "Lint passes"
+        "users table in convex/schema.ts with email, name, passwordHash, profileComplete, createdAt",
+        "Index by_email on email field",
+        "npx convex typecheck passes"
       ],
       "priority": 1,
       "passes": false
@@ -24,12 +24,13 @@
       "id": "US-002",
       "phaseId": "PHASE-01",
       "storyType": "implementation",
-      "title": "Create auth store",
+      "layer": "backend",
+      "title": "Create auth functions",
       "acceptanceCriteria": [
-        "authStore using Zustand",
-        "Actions: login, logout",
-        "TypeScript compiles",
-        "Lint passes"
+        "convex/auth.ts with login mutation",
+        "convex/auth.ts with register mutation",
+        "convex/auth.ts with getCurrentUser query",
+        "npx convex typecheck passes"
       ],
       "priority": 2,
       "passes": false
@@ -37,29 +38,27 @@
     {
       "id": "US-003",
       "phaseId": "PHASE-01",
-      "storyType": "verification",
-      "title": "VERIFY: Phase 1 foundation",
+      "storyType": "implementation",
+      "layer": "frontend",
+      "title": "Create auth store and types",
       "acceptanceCriteria": [
-        "All types importable",
-        "Store initializes",
-        "TypeScript compiles"
+        "AuthState type in types/auth.ts",
+        "useAuthStore in stores/authStore.ts",
+        "TypeScript compiles",
+        "Lint passes"
       ],
       "priority": 3,
       "passes": false
     },
     {
       "id": "US-004",
-      "phaseId": "PHASE-02",
-      "storyType": "implementation",
-      "title": "Create Login screen",
-      "testIdContract": "login-screen",
+      "phaseId": "PHASE-01",
+      "storyType": "verification",
+      "title": "VERIFY: Foundation",
       "acceptanceCriteria": [
-        "LoginScreen at /app/(auth)/login.tsx",
-        "Email input with testID='login-email-input'",
-        "Password input with testID='login-password-input'",
-        "Submit button with testID='login-submit-btn'",
-        "TypeScript compiles",
-        "Lint passes"
+        "npx convex typecheck passes",
+        "npx tsc --noEmit passes",
+        "Schema deploys successfully"
       ],
       "priority": 4,
       "passes": false
@@ -67,14 +66,35 @@
     {
       "id": "US-005",
       "phaseId": "PHASE-02",
-      "storyType": "verification",
-      "title": "VERIFY: Phase 2 auth screens",
+      "storyType": "implementation",
+      "layer": "frontend",
+      "title": "Create Login screen",
+      "testIdContract": "login-screen",
       "acceptanceCriteria": [
-        "All testIDs present",
-        "Maestro tests pass",
-        "TypeScript compiles"
+        "LoginScreen at /app/(auth)/login.tsx",
+        "Email input with testID='login-email-input'",
+        "Password input with testID='login-password-input'",
+        "Submit button with testID='login-submit-btn'",
+        "Error text with testID='login-error-text'",
+        "Integrates with convex auth.login mutation",
+        "TypeScript compiles",
+        "Lint passes"
       ],
       "priority": 5,
+      "passes": false
+    },
+    {
+      "id": "US-006",
+      "phaseId": "PHASE-02",
+      "storyType": "verification",
+      "title": "VERIFY: Auth flow",
+      "acceptanceCriteria": [
+        "All auth testIDs present in code",
+        "Expo MCP: automation_find_view_by_testid('login-email-input')",
+        "Expo MCP: automation_tap_by_testid('login-submit-btn')",
+        "npx convex typecheck passes"
+      ],
+      "priority": 6,
       "passes": false
     }
   ]
