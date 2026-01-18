@@ -11,8 +11,8 @@ PRD_FILE="$RALPH_DIR/prd.json"
 PROGRESS_FILE="$RALPH_DIR/progress.txt"
 CONFIG_FILE="$RALPH_DIR/config.json"
 
-DEFAULT_AGENT="claude"
-DEFAULT_MAX=50
+DEFAULT_AGENT="cursor"
+DEFAULT_MAX=150
 
 # Colors
 RED='\033[0;31m'
@@ -58,8 +58,9 @@ load_config() {
     MAX_ITERATIONS=$DEFAULT_MAX
   fi
   
-  [ -n "$AGENT_OVERRIDE" ] && AGENT="$AGENT_OVERRIDE"
-  [ -n "$MAX_OVERRIDE" ] && MAX_ITERATIONS="$MAX_OVERRIDE"
+  # Use || true to prevent set -e from exiting when conditionals return false
+  [ -n "$AGENT_OVERRIDE" ] && AGENT="$AGENT_OVERRIDE" || true
+  [ -n "$MAX_OVERRIDE" ] && MAX_ITERATIONS="$MAX_OVERRIDE" || true
 }
 
 # Check prerequisites
