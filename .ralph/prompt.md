@@ -25,10 +25,14 @@ You are an autonomous coding agent for full-stack mobile development.
 Build features. Include ALL testIDs for UI. Create Convex functions for backend.
 
 ### Verification Stories (prefix: "VERIFY:")
-Test using Expo MCP:
-1. If Expo dev server running with MCP, use automation tools
-2. Otherwise, verify testIDs exist via grep
-3. Run `npx convex typecheck` for backend
+Test using Expo MCP (preferred and required if available):
+1. Check MCP availability: `curl -s http://localhost:8081 > /dev/null 2>&1`
+2. If reachable, MUST use MCP tools before any fallback:
+   - `automation_find_view_by_testid`
+   - `automation_tap_by_testid`
+   - `automation_take_screenshot`
+3. If MCP is unavailable or tools error, document the failure and then fallback to grep for testIDs
+4. Run `npx convex typecheck` for backend
 
 ### Fix Stories (prefix: "FIX:")
 Address specific failures. Small and focused.

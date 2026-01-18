@@ -175,11 +175,13 @@ IMPORTANT:
 - Convex schema changes require running: npx convex dev
 
 For VERIFY stories (story type: verification):
-- Use Expo MCP tools if dev server is running with MCP enabled
-- automation_take_screenshot - capture current screen
-- automation_tap_by_testid - tap elements
-- automation_find_view_by_testid - verify elements exist
-- If MCP not available, verify testIDs exist in code via grep
+- First check MCP availability: curl -s http://localhost:8081 > /dev/null 2>&1
+- If reachable, MCP tools are REQUIRED:
+  - automation_find_view_by_testid
+  - automation_tap_by_testid
+  - automation_take_screenshot
+- If MCP is unavailable or tools error, note the failure and fallback to grep for testIDs
+- Run: npx convex typecheck (for backend)
 
 If ALL stories complete, end with: <promise>COMPLETE</promise>
 

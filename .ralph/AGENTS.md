@@ -67,18 +67,15 @@ const createItem = useMutation(api.items.create);
 EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
 ```
 
+### Required When Available
+- Check MCP availability: `curl -s http://localhost:8081 > /dev/null 2>&1`
+- If reachable, use MCP tools (do NOT skip to grep)
+- If MCP is unavailable or tools error, document the failure and fallback to grep
+
 ### Available Tools
 - `automation_take_screenshot` - Full screen capture
 - `automation_tap_by_testid` - Tap element
 - `automation_find_view_by_testid` - Find element
-- `automation_take_screenshot_by_testid` - Screenshot specific view
-
-### testID Naming
-```
-[screen]-[element]-[purpose]
-```
-
-Examples: `login-email-input`, `profile-save-btn`
 
 ---
 

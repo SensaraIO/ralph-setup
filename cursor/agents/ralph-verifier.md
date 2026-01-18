@@ -23,17 +23,18 @@ npx convex typecheck
 
 ### Frontend (testIDs)
 ```bash
-# Check testIDs exist in code
+# Fallback ONLY if MCP unavailable - see Expo MCP Testing below
 grep -r "testID=" app/ --include="*.tsx" | grep "element-name"
 ```
 
 ### Expo MCP Testing
 
-If Expo dev server running with MCP (`EXPO_UNSTABLE_MCP_SERVER=1`):
-
-- `automation_find_view_by_testid` - Verify element exists
-- `automation_tap_by_testid` - Test interactions
-- `automation_take_screenshot` - Visual verification
+1. Check MCP availability: `curl -s http://localhost:8081 > /dev/null 2>&1`
+2. If reachable, use MCP tools before any grep fallback:
+   - `automation_find_view_by_testid`
+   - `automation_tap_by_testid`
+   - `automation_take_screenshot`
+3. If MCP is unavailable or tools error, document the failure and then grep testIDs
 
 ## Report Format
 
