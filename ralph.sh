@@ -204,9 +204,9 @@ run_agent() {
       ;;
     cursor)
       if command -v agent &> /dev/null; then
-        agent -p "$prompt" 2>&1
+        agent -p --force "$prompt" 2>&1
       else
-        cursor -p "$prompt" 2>&1
+        cursor -p --force "$prompt" 2>&1
       fi
       ;;
     codex)

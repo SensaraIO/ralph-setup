@@ -93,6 +93,33 @@ npm install -g convex
 
 ---
 
+## Cursor CLI Support
+
+When using Cursor (`./ralph.sh --agent cursor`), Ralph sets up:
+
+- **`.cursor/agents/`** - Custom agents (ralph-implementer, ralph-verifier)
+- **`.cursor/hooks/`** - Auto-continue hook for multi-story loops
+- **`.cursor/cli.json`** - CLI permissions for headless mode
+- **`.cursor/mcp.json`** - MCP servers (Expo, Convex, Greptile)
+
+The setup scripts (`setup.sh` and `init-project.sh`) automatically install these.
+
+### MCP Servers
+
+Ralph configures these MCP servers for Cursor CLI:
+
+| Server | Purpose |
+|--------|---------|
+| `expo-mcp` | Expo automation (screenshots, taps, view inspection) |
+| `Convex` | Database queries, logs, function specs |
+| `greptile` | Code search and analysis |
+
+### Print Mode
+
+Ralph uses `agent -p --force` to enable file writes in headless/print mode. This allows automated story implementation without interactive approval.
+
+---
+
 ## Quick Start
 
 ### 1. Clone this repo
@@ -156,31 +183,45 @@ Ralph uses Expo MCP for automated testing instead of Maestro.
 
 ### For VERIFY Stories
 
-1. **Start the dev server with MCP:**
+1. **Start the dev server with MCP (with log capture):**
    ```bash
-   EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
+   EXPO_UNSTABLE_MCP_SERVER=1 npx expo start 2>&1 | tee .ralph/expo.log
    ```
+
+   **Important:** Expo must run in a separate terminal - Cursor CLI shell mode has a 30s timeout.
 
 2. **In another terminal, run the agent:**
    ```bash
-   claude  # or cursor
+   ./ralph.sh --agent cursor
    ```
 
 3. **The agent uses MCP tools for testing:**
    - `automation_take_screenshot` - Capture screen state
-   - `automation_tap_by_testid` - Tap elements by testID
-   - `automation_find_view_by_testid` - Find and analyze views
+   - `automation_tap` - Tap elements by testID
+   - `automation_find_view` - Find and analyze views
+
+4. **Review console logs for errors:**
+   ```bash
+   grep -i "error\|warn\|exception" .ralph/expo.log | tail -50
+   ```
 
 ### Expo MCP Tools
 
 | Tool | Description |
 |------|-------------|
-| `automation_take_screenshot` | Full device screenshot |
-| `automation_tap_by_testid` | Tap view by testID |
-| `automation_find_view_by_testid` | Find view properties |
-| `automation_take_screenshot_by_testid` | Screenshot specific view |
+| `automation_take_screenshot` | Full device screenshot (or specific view by testID) |
+| `automation_tap` | Tap view by testID or coordinates |
+| `automation_find_view` | Find view properties by testID |
 | `learn` | Learn Expo how-to |
 | `add_library` | Install packages |
+
+### Cursor CLI MCP Discovery
+
+```bash
+agent mcp list              # List configured MCP servers
+agent mcp list-tools expo-mcp  # Show Expo MCP tools
+agent mcp list-tools Convex    # Show Convex MCP tools
+```
 
 ---
 

@@ -8,6 +8,24 @@ You are an autonomous implementation agent for full-stack mobile development.
 
 **Stack:** Expo (frontend) + Convex (backend)
 
+## MCP Servers vs Expo MCP Tools
+
+**Cursor MCP Servers** (configured in `.cursor/mcp.json`):
+- `expo-mcp` - Expo automation tools (screenshots, taps, view inspection)
+- `Convex` - Database queries, logs, function specs
+- `greptile` - Code search and analysis
+
+**Expo MCP Tools** (via `expo-mcp` server, used for VERIFY stories):
+- `automation_take_screenshot` - Capture screen (optionally by testID)
+- `automation_tap` - Tap element by testID or coordinates
+- `automation_find_view` - Find element by testID
+
+Discover available tools:
+```bash
+agent mcp list              # List MCP servers
+agent mcp list-tools expo-mcp  # Show Expo MCP tools
+```
+
 ## When Invoked
 
 1. Read `.ralph/prd.json` to find the specified story

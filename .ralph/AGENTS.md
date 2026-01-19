@@ -64,18 +64,32 @@ const createItem = useMutation(api.items.create);
 
 ### Start Dev Server with MCP
 ```bash
-EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
+# With log capture (run in a separate terminal)
+EXPO_UNSTABLE_MCP_SERVER=1 npx expo start 2>&1 | tee .ralph/expo.log
+```
+
+**Important:** Expo must run in a separate terminal - Cursor CLI shell mode has a 30s timeout.
+
+### MCP Discovery (Cursor CLI)
+```bash
+agent mcp list              # List configured MCP servers
+agent mcp list-tools expo-mcp  # Show available Expo tools
 ```
 
 ### Required When Available
 - Check MCP availability: `curl -s http://localhost:8081 > /dev/null 2>&1`
-- If reachable, use MCP tools (do NOT skip to grep)
+- If reachable, use MCP tools via Cursor (do NOT skip to grep)
 - If MCP is unavailable or tools error, document the failure and fallback to grep
 
-### Available Tools
-- `automation_take_screenshot` - Full screen capture
-- `automation_tap_by_testid` - Tap element
-- `automation_find_view_by_testid` - Find element
+### Available Tools (via expo-mcp server)
+- `automation_take_screenshot` - Full screen capture (optionally by testID)
+- `automation_tap` - Tap element by testID or coordinates
+- `automation_find_view` - Find element by testID
+
+### Console Log Review
+```bash
+grep -i "error\|warn\|exception" .ralph/expo.log | tail -50
+```
 
 ---
 

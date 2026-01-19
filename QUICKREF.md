@@ -69,9 +69,24 @@ export const create = mutation({ args: { name: v.string() }, handler: ... })
 
 | Tool | Use |
 |------|-----|
-| `automation_take_screenshot` | Capture screen |
-| `automation_tap_by_testid` | Tap element |
-| `automation_find_view_by_testid` | Verify exists |
+| `automation_take_screenshot` | Capture screen (or view by testID) |
+| `automation_tap` | Tap element by testID |
+| `automation_find_view` | Verify element exists by testID |
+
+## Cursor CLI
+
+```bash
+# MCP discovery
+agent mcp list
+agent mcp list-tools expo-mcp
+agent mcp list-tools Convex
+
+# Start Expo with log capture
+EXPO_UNSTABLE_MCP_SERVER=1 npx expo start 2>&1 | tee .ralph/expo.log
+
+# Check logs for errors
+grep -i "error\|warn" .ralph/expo.log | tail -50
+```
 
 ## Files
 

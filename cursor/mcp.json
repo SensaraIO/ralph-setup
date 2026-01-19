@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "expo-mcp": {
+      "url": "https://mcp.expo.dev/mcp",
+      "headers": {}
+    },
+    "Convex": {
+      "command": "npx -y convex@latest mcp start",
+      "env": {},
+      "args": []
+    },
+    "greptile": {
+      "command": "npx -y @greptile/mcp-server@latest",
+      "env": {},
+      "args": []
+    }
+  }
+}

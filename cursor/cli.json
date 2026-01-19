@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "editor": {
+    "vimMode": false
+  },
+  "permissions": {
+    "allow": [
+      "Shell(git)",
+      "Shell(jq)",
+      "Shell(curl)",
+      "Shell(npx)",
+      "Shell(npm)",
+      "Shell(grep)",
+      "Shell(cat)",
+      "Shell(echo)",
+      "Shell(ls)",
+      "Shell(mkdir)",
+      "Shell(chmod)",
+      "Read(**)",
+      "Write(**)"
+    ],
+    "deny": [
+      "Shell(rm)",
+      "Write(**/.env.local)",
+      "Write(**/credentials.json)"
+    ]
+  }
+}

@@ -111,13 +111,35 @@ npx convex typecheck
 For VERIFY stories, if Expo dev server is running with MCP:
 
 ```bash
-EXPO_UNSTABLE_MCP_SERVER=1 npx expo start
+# Start with log capture (run in a separate terminal)
+EXPO_UNSTABLE_MCP_SERVER=1 npx expo start 2>&1 | tee .ralph/expo.log
 ```
 
-Use MCP tools:
-- `automation_take_screenshot` - Capture screen
-- `automation_tap_by_testid` - Tap element
-- `automation_find_view_by_testid` - Verify element exists
+**Important:** Expo must run in a separate terminal - Cursor CLI shell mode has a 30s timeout and cannot run long-lived servers.
+
+### Expo MCP Tool Discovery
+
+Before using MCP tools, discover available tools:
+```bash
+agent mcp list              # List configured MCP servers
+agent mcp list-tools expo-mcp  # Show available Expo MCP tools
+```
+
+### Available MCP Tools
+
+Use via Cursor MCP (tools require `projectRoot` parameter):
+- `automation_take_screenshot` - Capture screen (optionally by testID)
+- `automation_tap` - Tap element by testID or coordinates
+- `automation_find_view` - Verify element exists by testID
+
+### Log Review
+
+After testing, scan Expo logs for runtime errors:
+```bash
+grep -i "error\|warn\|exception" .ralph/expo.log | tail -50
+```
+
+### Fallback
 
 If MCP not available, verify testIDs via:
 ```bash

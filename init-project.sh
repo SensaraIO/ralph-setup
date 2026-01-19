@@ -281,6 +281,16 @@ cp "$SCRIPT_DIR/ralph.sh" ./
 cp "$SCRIPT_DIR/docs/BRS-TEMPLATE.md" docs/
 chmod +x ralph.sh
 
+# Copy Cursor CLI configuration
+log "Setting up Cursor CLI support..."
+mkdir -p .cursor/agents .cursor/hooks
+cp "$SCRIPT_DIR/cursor/agents/"*.md .cursor/agents/ 2>/dev/null || true
+cp "$SCRIPT_DIR/cursor/hooks/"* .cursor/hooks/ 2>/dev/null || true
+cp "$SCRIPT_DIR/cursor/cli.json" .cursor/ 2>/dev/null || true
+cp "$SCRIPT_DIR/cursor/mcp.json" .cursor/ 2>/dev/null || true
+chmod +x .cursor/hooks/*.sh 2>/dev/null || true
+success "Cursor CLI configured"
+
 cat > .ralph/progress.txt << 'EOF'
 # Ralph Progress Log
 
